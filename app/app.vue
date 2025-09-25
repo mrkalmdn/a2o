@@ -194,7 +194,7 @@ const categories: any = ["pd-memphis", "pd-northern-nj", "pd-long-island"];
 
 <template>
   <div class="max-w-7xl mx-auto p-10">
-    <LineChart
+    <!-- <LineChart
       class="h-1/2"
       :data="data"
       :categories="categories"
@@ -202,6 +202,9 @@ const categories: any = ["pd-memphis", "pd-northern-nj", "pd-long-island"];
       index="date"
       :show-x-axis="true"
       :show-y-axis="true"
-    />
+    /> -->
+
+    <job-booking />
+    <conversion-funnel />
   </div>
 </template>
