@@ -40,19 +40,9 @@ const data = {
   navMain: [
     {
       title: "Reports",
-      url: "#",
+      url: "/reports",
       icon: SquareTerminal,
       isActive: true,
-      items: [
-        {
-          title: "Job Bookings",
-          url: "/reports/job-bookings",
-        },
-        {
-          title: "Conversion Funnel",
-          url: "#",
-        },
-      ],
     },
   ],
   navSecondary: [

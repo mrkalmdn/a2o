@@ -26,10 +26,19 @@ ChartJS.register(
 import { Bar } from "vue-chartjs";
 
 const loading = ref(false);
+const range = ref({
+  start: "2025-09-01",
+  end: "2025-09-30",
+});
 
-const { data, status } = await useFetch(
-  "http://a2o-api.test/api/reports?start=2025-09-01&end=2025-09-30&type=conversion_funnel"
-);
+const params = new URLSearchParams({
+  start: range.value.start,
+  end: range.value.end,
+  type: "conversion_funnel",
+});
+const markets = [1, 2, 4];
+markets.forEach((market) => params.append("markets[]", String(market)));
+const { data, status } = await useApi("api/reports?" + params);
 
 if (status.value === "pending") {
   loading.value = true;
@@ -62,7 +71,7 @@ const options: ChartOptions<"bar"> = {
 <template>
   <div>
     <div v-if="loading">Loading</div>
-    <div v-else class="h-[500px]">
+    <div v-else class="h-[800px]">
       <Bar :data="(data as ChartData<'bar'>)" :options="options" />
     </div>
   </div>

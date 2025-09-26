@@ -5,7 +5,11 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
   css: ["~/assets/css/tailwind.css"],
-
+  runtimeConfig: {
+    public: {
+      apiBaseUrl: "",
+    },
+  },
   vite: {
     plugins: [tailwindcss()],
   },
@@ -23,10 +27,17 @@ export default defineNuxtConfig({
     componentDir: "./components/ui",
   },
   sanctum: {
-    baseUrl: "http://a2o-api.test",
+    baseUrl: "http://localhost:8000",
+    mode: "token",
+    endpoints: {
+      login: "api/login",
+      logout: "api/logout",
+    },
     redirect: {
       onAuthOnly: "/",
       onGuestOnly: "/reports",
+      onLogin: "/",
+      onLogout: "/",
     },
   },
 });

@@ -14,7 +14,7 @@ const credentials = {
   password: "password",
 };
 
-// await login(credentials);
+await login(credentials);
 </script>
 
 <script setup lang="ts"></script>

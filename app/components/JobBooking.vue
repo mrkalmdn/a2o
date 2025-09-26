@@ -36,9 +36,17 @@ const range = ref({
 });
 
 const handleFetchData = async () => {
-  const response = await useFetch(
-    `http://a2o-api.test/api/reports?start=${range.value.start}&end=${range.value.end}&type=job_booking`
-  );
+  const params = new URLSearchParams({
+    start: range.value.start,
+    end: range.value.end,
+    type: "job_booking",
+  });
+
+  const markets = [1, 2, 4];
+
+  markets.forEach((market) => params.append("markets[]", String(market)));
+
+  const response = await useApi("api/reports?" + params);
 
   status.value = response.status.value;
   data.value = response.data.value;
@@ -70,7 +78,7 @@ const options: ChartOptions<"line"> = {
 
 <template>
   <div>
-    <div v-if="status === 'success'" class="h-[600px]">
+    <div v-if="status === 'success'" class="h-[800px]">
       <div class="flex items-center justify-end p-6 gap-2">
         <div>
           <DateRange @update="handleDateRange($event)" />
