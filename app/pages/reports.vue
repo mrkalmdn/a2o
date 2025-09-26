@@ -18,24 +18,34 @@ import {
 import ConversionFunnel from "~/components/ConversionFunnel.vue";
 import JobBooking from "~/components/JobBooking.vue";
 import { useApi } from "~/composables/useApi";
+import type { DateRange, DateValue } from "reka-ui";
+import dayjs from "dayjs";
 
 interface ComboBoxType {
   value: string;
   label: string;
 }
-const reportComponents: any = {
-  JobBooking,
-  ConversionFunnel,
+const reportComponents: Record<string, any> = {
+  job_booking: JobBooking,
+  conversion_funnel: ConversionFunnel,
 };
 const reportTypes: ComboBoxType[] = [
-  { value: "JobBooking", label: "Job Booking" },
-  { value: "ConversionFunnel", label: "Conversion Funnel" },
+  { value: "job_booking", label: "Job Booking" },
+  { value: "conversion_funnel", label: "Conversion Funnel" },
 ];
 
 const report = ref();
 const markets = ref<ComboBoxType[]>([]);
 const market = ref();
-const currentReport = computed(() => reportComponents[report.value]);
+
+const filters = ref({
+  start: dayjs().format("YYYY-MM-DD"),
+  end: dayjs().add(1, "month").format("YYYY-MM-DD"),
+  type: "",
+  markets: [],
+});
+
+const currentReport = computed(() => reportComponents[filters.value.type]);
 
 const handleFetchMarkets = async () => {
   const { data, status, error } = await useApi("api/markets");
@@ -46,9 +56,50 @@ const handleFetchMarkets = async () => {
 
   markets.value = data.value as ComboBoxType[];
 };
-const handleDateRange = (event: any) => {};
+const handleDateRange = (event: DateRange) => {
+  if (!event.start || !event.end) {
+    return;
+  }
+
+  filters.value.start = dayjs(event.start.toString()).format("YYYY-MM-DD");
+  filters.value.end = dayjs(event.end.toString()).format("YYYY-MM-DD");
+};
 
 await handleFetchMarkets();
+
+const handleDownload = async () => {
+  const token = useCookie("sanctum.token.cookie")?.value;
+
+  const params = new URLSearchParams({
+    start: filters.value.start,
+    end: filters.value.end,
+    type: filters.value.type,
+  });
+
+  [1, 2, 4].forEach((m: number) => params.append("markets[]", String(m)));
+
+  const response = await fetch(
+    `http://localhost:8000/api/exports?${params.toString()}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        Accept: "application/json, text/csv",
+      },
+      credentials: "include",
+    }
+  );
+
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${filters.value.type}.csv`;
+  a.click();
+  window.URL.revokeObjectURL(url);
+};
 </script>
 
 <template>
@@ -85,7 +136,7 @@ await handleFetchMarkets();
       </ComboboxList>
     </Combobox>
 
-    <Combobox v-model="report" by="value">
+    <Combobox v-model="filters.type" by="value">
       <ComboboxAnchor>
         <div class="relative w-full max-w-sm items-center">
           <ComboboxInput
@@ -119,8 +170,14 @@ await handleFetchMarkets();
 
     <DateRange @update="handleDateRange($event)" />
 
-    <Button> Download CSV </Button>
+    <Button class="cursor-pointer" @click="handleDownload()">
+      Download CSV
+    </Button>
   </div>
 
-  <component :is="currentReport" />
+  <component
+    :is="currentReport"
+    :filters="filters"
+    :key="`${filters.type}-${filters.start}-${filters.end}`"
+  />
 </template>

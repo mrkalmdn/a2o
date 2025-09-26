@@ -25,28 +25,27 @@ ChartJS.register(
 );
 import { Bar } from "vue-chartjs";
 
+const props = defineProps(["filters"]);
+
 const loading = ref(false);
-const range = ref({
-  start: "2025-09-01",
-  end: "2025-09-30",
-});
+const data = ref();
+const status = ref();
 
-const params = new URLSearchParams({
-  start: range.value.start,
-  end: range.value.end,
-  type: "conversion_funnel",
-});
-const markets = [1, 2, 4];
-markets.forEach((market) => params.append("markets[]", String(market)));
-const { data, status } = await useApi("api/reports?" + params);
+const handleFetchData = async () => {
+  const params = new URLSearchParams({
+    start: props.filters?.start,
+    end: props.filters?.end,
+    type: "conversion_funnel",
+  });
+  const markets = [1, 2, 4];
+  markets.forEach((market) => params.append("markets[]", String(market)));
+  const response = await useApi("api/reports?" + params);
 
-if (status.value === "pending") {
-  loading.value = true;
-}
+  data.value = response.data.value;
+  status.value = response.status.value;
+};
 
-if (status.value === "success") {
-  loading.value = false;
-}
+await handleFetchData();
 
 const options: ChartOptions<"bar"> = {
   indexAxis: "y",
@@ -70,8 +69,7 @@ const options: ChartOptions<"bar"> = {
 
 <template>
   <div>
-    <div v-if="loading">Loading</div>
-    <div v-else class="h-[800px]">
+    <div v-if="status === 'success'" class="h-[800px]">
       <Bar :data="(data as ChartData<'bar'>)" :options="options" />
     </div>
   </div>

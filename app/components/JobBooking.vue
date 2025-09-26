@@ -28,6 +28,8 @@ ChartJS.register(
   Legend
 );
 
+const props = defineProps(["filters"]);
+
 const data = ref();
 const status = ref();
 const range = ref({
@@ -37,8 +39,8 @@ const range = ref({
 
 const handleFetchData = async () => {
   const params = new URLSearchParams({
-    start: range.value.start,
-    end: range.value.end,
+    start: props.filters?.start,
+    end: props.filters?.end,
     type: "job_booking",
   });
 
@@ -54,17 +56,6 @@ const handleFetchData = async () => {
 
 await handleFetchData();
 
-const handleDateRange = async (event: DateRange) => {
-  if (!event.start || !event.end) {
-    return;
-  }
-
-  range.value.start = dayjs(event.start.toString()).format("YYYY-MM-DD");
-  range.value.end = dayjs(event.end.toString()).format("YYYY-MM-DD");
-
-  await handleFetchData();
-};
-
 const options: ChartOptions<"line"> = {
   responsive: true,
   maintainAspectRatio: false,
@@ -74,20 +65,19 @@ const options: ChartOptions<"line"> = {
     },
   },
 };
+
+watch(
+  () => props.filters,
+  async (newFilters) => {
+    await handleFetchData();
+  },
+  { deep: true }
+);
 </script>
 
 <template>
   <div>
     <div v-if="status === 'success'" class="h-[800px]">
-      <div class="flex items-center justify-end p-6 gap-2">
-        <div>
-          <DateRange @update="handleDateRange($event)" />
-        </div>
-        <div>
-          <Button> Download CSV </Button>
-        </div>
-      </div>
-
       <Line :data="(data as ChartData<'line'>)" :options="options" />
     </div>
   </div>
