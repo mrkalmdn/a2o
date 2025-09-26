@@ -9,12 +9,15 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 
 const { login } = useSanctumAuth();
-const credentials = {
-  email: "admin@example.com",
-  password: "password",
-};
 
-await login(credentials);
+const form = ref({
+  email: "",
+  password: "",
+});
+
+const handleSubmit = async () => {
+  await login(form.value);
+};
 </script>
 
 <script setup lang="ts"></script>
@@ -36,6 +39,7 @@ await login(credentials);
               id="email"
               type="email"
               placeholder="m@example.com"
+              v-model="form.email"
               required
             />
           </div>
@@ -49,9 +53,18 @@ await login(credentials);
                 Forgot your password?
               </a>
             </div>
-            <Input id="password" type="password" required />
+            <Input
+              v-model="form.password"
+              id="password"
+              type="password"
+              required
+            />
           </div>
-          <Button class="w-full" variant="default" @click="handleSubmit">
+          <Button
+            class="w-full cursor-pointer"
+            variant="default"
+            @click="handleSubmit"
+          >
             Login
           </Button>
         </div>

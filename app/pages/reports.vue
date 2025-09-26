@@ -170,7 +170,13 @@ const handleDownload = async () => {
 
     <DateRange @update="handleDateRange($event)" />
 
-    <Button class="cursor-pointer" @click="handleDownload()">
+    <Button
+      class="cursor-pointer"
+      @click="handleDownload()"
+      :disabled="
+        filters.type === '' || filters.start === '' || filters.end === ''
+      "
+    >
       Download CSV
     </Button>
   </div>
